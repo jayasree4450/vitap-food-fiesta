@@ -1,0 +1,179 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Food Fiesta - VIT AP</title>
+
+<style>
+body{
+    margin:0;
+    font-family: 'Segoe UI', sans-serif;
+    background:#fff8f2;
+}
+
+/* HEADER */
+header{
+    background:#d62828;
+    padding:15px;
+    text-align:center;
+}
+header img{
+    height:60px;
+}
+
+/* NAVBAR */
+nav{
+    background:#f77f00;
+    text-align:center;
+    padding:12px;
+}
+nav a{
+    color:white;
+    text-decoration:none;
+    margin:15px;
+    font-weight:bold;
+}
+nav a:hover{
+    color:#ffe5b4;
+}
+
+/* HERO */
+.hero{
+    height:80vh;
+    background:url("https://images.unsplash.com/photo-1504674900247-0877df9cc836") center/cover;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    color:white;
+    text-align:center;
+}
+.hero h1{
+    font-size:50px;
+    background:rgba(0,0,0,0.5);
+    padding:20px;
+    border-radius:10px;
+}
+
+/* SECTION */
+section{
+    padding:60px 20px;
+    text-align:center;
+}
+
+/* MENU CARDS */
+.menu-container{
+    display:flex;
+    flex-wrap:wrap;
+    justify-content:center;
+}
+.card{
+    width:280px;
+    background:white;
+    margin:20px;
+    border-radius:15px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.1);
+    overflow:hidden;
+    transition:0.3s;
+}
+.card:hover{
+    transform:scale(1.05);
+}
+.card img{
+    width:100%;
+    height:200px;
+    object-fit:cover;
+}
+.card h3{
+    margin:10px 0;
+}
+
+/* ABOUT */
+.about{
+    background:#ffe8d6;
+}
+
+/* CONTACT */
+.contact{
+    background:#fff;
+}
+
+/* FOOTER */
+footer{
+    background:#d62828;
+    color:white;
+    text-align:center;
+    padding:20px;
+}
+</style>
+</head>
+
+<body>
+
+<!-- HEADER -->
+<header>
+<img src="C:\Users\VITAP\Downloads\logo.jpeg" alt="VIT AP Logo">
+</header>
+
+<!-- NAV -->
+<nav>
+<a href="#">Home</a>
+<a href="#menu">Menu</a>
+<a href="#about">About</a>
+<a href="#contact">Contact</a>
+</nav>
+
+<!-- HERO -->
+<div class="hero">
+<h1>Welcome to Food Fiesta 🍕</h1>
+</div>
+
+<!-- MENU -->
+<section id="menu">
+<h2>Our Special Menu</h2>
+
+<div class="menu-container">
+
+<div class="card">
+<img src="https://images.unsplash.com/photo-1568901346375-23c9450c58cd">
+<h3>Burger</h3>
+<p>Loaded juicy burger</p>
+</div>
+
+<div class="card">
+<img src="https://images.unsplash.com/photo-1548365328-9f547fb0953a">
+<h3>Pizza</h3>
+<p>Cheesy Italian pizza</p>
+</div>
+
+<div class="card">
+<img src="https://images.unsplash.com/photo-1562967916-eb82221dfb36">
+<h3>Pasta</h3>
+<p>Creamy white sauce pasta</p>
+</div>
+
+</div>
+</section>
+
+<!-- ABOUT -->
+<section id="about" class="about">
+<h2>About Us</h2>
+<p>
+Welcome to Food Fiesta! We serve fresh, tasty, and high-quality food.
+</p>
+</section>
+
+<!-- CONTACT -->
+<section id="contact" class="contact">
+<h2>Contact Us</h2>
+<p>Email: foodfiesta@gmail.com</p>
+<p>Phone: +91 9876543210</p>
+</section>
+
+<!-- FOOTER -->
+<footer>
+VIT-AP University
+</footer>
+
+</body>
+</html>
