@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html>
+<head>
+<title>Login</title>
+<style>
+body{
+font-family: Arial;
+text-align:center;
+margin-top:100px;
+}
+
+input{
+display:block;
+margin:10px auto;
+padding:8px;
+}
+
+button{
+padding:10px 20px;
+background:#c40000;
+color:white;
+border:none;
+cursor:pointer;
+}
+</style>
+</head>
+
+<body>
+
+<h2>Login / Signup</h2>
+
+<input type="text" id="username" placeholder="Enter username">
+<input type="password" id="password" placeholder="Enter password">
+
+<button onclick="signup()">Signup</button>
+<button onclick="login()">Login</button>
+
+<script>
+
+function signup(){
+
+let user=document.getElementById("username").value;
+let pass=document.getElementById("password").value;
+
+localStorage.setItem("user",user);
+localStorage.setItem("pass",pass);
+
+alert("Signup successful!");
+
+}
+
+function login(){
+
+let user=document.getElementById("username").value;
+let pass=document.getElementById("password").value;
+
+let savedUser=localStorage.getItem("user");
+let savedPass=localStorage.getItem("pass");
+
+if(user===savedUser && pass===savedPass){
+alert("Login successful!");
+window.location.href="index.html";
+}
+else{
+alert("Invalid login");
+}
+
+}
+
+</script>
+
+</body>
+</html>
