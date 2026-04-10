@@ -1,0 +1,21 @@
+{
+  "version": 2,
+  "builds": [
+    {
+      "src": "server.js",
+      "use": "@vercel/node"
+    },
+    {
+      "src": "*.html",
+      "use": "@vercel/static"
+    }
+  ],
+  "rewrites": [
+    { "source": "/login", "destination": "/server.js" },
+    { "source": "/admin-login", "destination": "/server.js" },
+    { "source": "/create-user", "destination": "/server.js" },
+    { "source": "/add-food", "destination": "/server.js" },
+    { "source": "/like-food", "destination": "/server.js" },
+    { "source": "/graph", "destination": "/server.js" }
+  ]
+}
