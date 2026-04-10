@@ -22,7 +22,11 @@ async function initDatabase() {
             MERGE (u:User {email: 'jayasreementhi@gmail.com'})
             ON CREATE SET u.name = 'Jayasree', u.password = 'Loveuma@143'
         `);
-        console.log("Database initialized with default user: jayasreementhi@gmail.com");
+        await session.run(`
+            MERGE (a:Admin {email: 'admin@vitap.edu'})
+            ON CREATE SET a.name = 'Administrator', a.password = 'admin123'
+        `);
+        console.log("Database initialized with default user and admin");
     } catch (error) {
         console.error("Error initializing DB:", error.message);
     } finally {
@@ -45,6 +49,56 @@ app.post('/create-user', async (req, res) => {
             { name, email, password }
         );
         res.json({ message: "User created successfully", user: result.records[0].get('u').properties });
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    } finally {
+        await session.close();
+    }
+});
+
+// User Login Endpoint
+app.post('/login', async (req, res) => {
+    const { username, password } = req.body;
+    if(!username || !password) return res.status(400).json({error: "Username (email) and password required"});
+    
+    const session = driver.session();
+    try {
+        const result = await session.run(
+            `MATCH (u:User {email: $username, password: $password})
+             RETURN u`,
+            { username, password }
+        );
+        
+        if (result.records.length > 0) {
+            res.json({ message: "Login successful", user: result.records[0].get('u').properties });
+        } else {
+            res.status(401).json({ error: "Invalid credentials" });
+        }
+    } catch (error) {
+        res.status(500).json({ error: error.message });
+    } finally {
+        await session.close();
+    }
+});
+
+// Admin Login Endpoint
+app.post('/admin-login', async (req, res) => {
+    const { username, password } = req.body;
+    if(!username || !password) return res.status(400).json({error: "Username (email) and password required"});
+    
+    const session = driver.session();
+    try {
+        const result = await session.run(
+            `MATCH (a:Admin {email: $username, password: $password})
+             RETURN a`,
+            { username, password }
+        );
+        
+        if (result.records.length > 0) {
+            res.json({ message: "Admin login successful", admin: result.records[0].get('a').properties });
+        } else {
+            res.status(401).json({ error: "Invalid admin credentials" });
+        }
     } catch (error) {
         res.status(500).json({ error: error.message });
     } finally {
@@ -146,8 +200,8 @@ app.get('/graph', async (req, res) => {
             if (r) {
                 // Ensure duplicate relationships aren't drawn (since undirected relationships show up twice)
                 links.push({
-                    source: getId(r.startNode) || r.startNodeElementId,
-                    target: getId(r.endNode) || r.endNodeElementId,
+                    source: r.startNodeElementId || (r.start ? r.start.low || r.start : null),
+                    target: r.endNodeElementId || (r.end ? r.end.low || r.end : null),
                     type: r.type,
                     properties: r.properties
                 });
@@ -166,4 +220,4 @@ app.get('/graph', async (req, res) => {
 });
 
 const PORT = process.env.PORT || 3000;
-app.listen(PORT, () => console.log(\`Server running on port \${PORT}\`));
+app.listen(PORT, () => console.log(`Server running on port ${PORT}`));

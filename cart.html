@@ -1,0 +1,264 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Your Cart - Food Fiesta</title>
+    <link href="https://fonts.googleapis.com/css2?family=Segoe+UI:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Segoe UI', sans-serif;
+            background: #fff8f2;
+            color: #333;
+        }
+
+        /* HEADER */
+        header {
+            background: #d62828;
+            padding: 15px;
+            text-align: center;
+        }
+        header img {
+            height: 60px;
+        }
+
+        /* NAVBAR */
+        nav {
+            background: #f77f00;
+            text-align: center;
+            padding: 12px;
+        }
+        nav a {
+            color: white;
+            text-decoration: none;
+            margin: 15px;
+            font-weight: bold;
+        }
+        nav a:hover {
+            color: #ffe5b4;
+        }
+
+        /* CART CONTAINER */
+        .cart-wrapper {
+            max-width: 800px;
+            margin: 50px auto;
+            background: white;
+            padding: 30px;
+            border-radius: 15px;
+            box-shadow: 0 5px 20px rgba(0,0,0,0.05);
+        }
+
+        h2 {
+            margin-top: 0;
+            border-bottom: 2px solid #fff8f2;
+            padding-bottom: 10px;
+            color: #d62828;
+        }
+
+        .cart-item {
+            display: flex;
+            justify-content: space-between;
+            background: #fdfdfd;
+            padding: 15px;
+            border-radius: 10px;
+            margin-bottom: 15px;
+            border: 1px solid #eee;
+            align-items: center;
+        }
+
+        .cart-item h3 {
+            margin: 0;
+            color: #333;
+        }
+
+        .cart-item p {
+            margin: 0;
+            color: #f77f00;
+            font-weight: bold;
+            font-size: 1.1rem;
+        }
+        
+        .remove-btn {
+            background: #ffdbdb;
+            color: #d62828;
+            border: none;
+            padding: 8px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-weight: bold;
+        }
+
+        .empty-message {
+            text-align: center;
+            color: #888;
+            font-style: italic;
+            padding: 20px 0;
+        }
+
+        .total-section {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-top: 30px;
+            padding-top: 20px;
+            border-top: 2px solid #eee;
+        }
+
+        .total-section h3 {
+            margin: 0;
+            font-size: 1.5rem;
+        }
+
+        .checkout-btn {
+            background: #d62828;
+            color: white;
+            border: none;
+            padding: 12px 30px;
+            font-size: 1.1rem;
+            border-radius: 8px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .checkout-btn:hover {
+            transform: scale(1.05);
+            background: #c22020;
+        }
+        
+        /* FOOTER */
+        footer {
+            background: #d62828;
+            color: white;
+            text-align: center;
+            padding: 20px;
+            margin-top: 50px;
+        }
+    </style>
+</head>
+<body>
+
+    <!-- HEADER -->
+    <header>
+        <img src="https://seeklogo.com/images/V/vit-ap-university-logo-A26F824ECD-seeklogo.com.png" alt="VIT AP Logo" style="filter: brightness(0) invert(1);">
+    </header>
+
+    <!-- NAV -->
+    <nav>
+        <a href="index.html">Home</a>
+        <a href="index.html#menu">Menu</a>
+        <a href="index.html#about">About</a>
+        <a href="index.html#contact">Contact</a>
+        <a href="cart.html" style="color: #ffe5b4;">Cart</a>
+        <a href="login.html">Login</a>
+    </nav>
+
+    <!-- CART -->
+    <div class="cart-wrapper">
+        <h2>Your Order Summary</h2>
+        <div id="cartItemsContainer">
+            <!-- Items injected by JS -->
+        </div>
+
+        <div class="total-section">
+            <h3>Total: ₹<span id="totalPrice">0</span></h3>
+            <button class="checkout-btn" onclick="checkout()">Place Order</button>
+        </div>
+    </div>
+
+    <!-- FOOTER -->
+    <footer>
+        VIT-AP University
+    </footer>
+
+    <script>
+        // Load cart from local storage matching the implementation in index.html
+        function loadCart() {
+            const container = document.getElementById('cartItemsContainer');
+            const totalEl = document.getElementById('totalPrice');
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            
+            container.innerHTML = '';
+            let total = 0;
+
+            if (cart.length === 0) {
+                container.innerHTML = '<div class="empty-message">Your cart is completely empty! Add some delicious food first.</div>';
+                totalEl.innerText = '0';
+                return;
+            }
+
+            cart.forEach((item, index) => {
+                total += item.price;
+                const div = document.createElement('div');
+                div.className = 'cart-item';
+                div.innerHTML = `
+                    <h3>${item.food}</h3>
+                    <div>
+                        <span style="font-weight: bold; color: #f77f00; margin-right: 20px;">₹${item.price}</span>
+                        <button class="remove-btn" onclick="removeItem(${index})">Remove</button>
+                    </div>
+                `;
+                container.appendChild(div);
+            });
+
+            totalEl.innerText = total;
+        }
+
+        function removeItem(index) {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            cart.splice(index, 1);
+            localStorage.setItem('cart', JSON.stringify(cart));
+            loadCart();
+        }
+
+        async function checkout() {
+            const cart = JSON.parse(localStorage.getItem('cart')) || [];
+            if (cart.length === 0) {
+                alert("Cart is empty!");
+                return;
+            }
+
+            const userEmail = sessionStorage.getItem("userEmail");
+            
+            if (!userEmail) {
+                alert("Please login first to place your order!");
+                window.location.href = "login.html";
+                return;
+            }
+
+            try {
+                // For each item in cart, we link it in Neo4j!
+                // Wait, first we ensure the food exists in neo4j database to satisfy matches
+                const foods = [...new Set(cart.map(item => item.food))];
+                
+                for(let food of foods) {
+                    // First register the food in the graph (in case it wasn't added by admin)
+                    await fetch('/add-food', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ name: food, category: 'Fast Food' })
+                    });
+
+                    // Then create the LIKES relationship
+                    await fetch('/like-food', {
+                        method: 'POST',
+                        headers: {'Content-Type': 'application/json'},
+                        body: JSON.stringify({ email: userEmail, foodName: food })
+                    });
+                }
+
+                alert("Order placed successfully! The dashboard has been updated with your connections.");
+                localStorage.removeItem('cart'); // Clear cart
+                window.location.href = "index.html";
+
+            } catch (err) {
+                console.error(err);
+                alert("Error placing order. Ensure Neo4j backend is running!");
+            }
+        }
+
+        // Init
+        loadCart();
+    </script>
+</body>
+</html>

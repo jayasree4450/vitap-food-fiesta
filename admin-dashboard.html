@@ -1,0 +1,348 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Admin Dashboard - Food Fiesta</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <script type="text/javascript" src="https://unpkg.com/vis-network/standalone/umd/vis-network.min.js"></script>
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background-color: #f4f7fe;
+            color: #2b3674;
+        }
+
+        /* HEADER */
+        header {
+            background-color: #ffffff;
+            padding: 20px 40px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+            border-bottom: 2px solid #e0e5f2;
+        }
+
+        header h1 {
+            margin: 0;
+            font-size: 1.5rem;
+            color: #1e3c72;
+        }
+
+        .logout-btn {
+            background: #ff5b5b;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-weight: 600;
+            transition: all 0.2s;
+        }
+        
+        .logout-btn:hover {
+            background: #e04848;
+            transform: translateY(-2px);
+        }
+
+        /* DASHBOARD CONTENT */
+        .dashboard-container {
+            padding: 40px;
+            max-width: 1400px;
+            margin: auto;
+        }
+
+        /* METRICS */
+        .metrics-row {
+            display: flex;
+            gap: 20px;
+            margin-bottom: 30px;
+        }
+
+        .metric-card {
+            background: #ffffff;
+            flex: 1;
+            padding: 25px;
+            border-radius: 16px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+            text-align: center;
+            border-left: 5px solid #4318ff;
+            transition: transform 0.2s;
+        }
+        .metric-card:hover {
+            transform: translateY(-5px);
+        }
+        .metric-card h3 {
+            margin: 0;
+            font-size: 1rem;
+            color: #a3aed1;
+            text-transform: uppercase;
+        }
+        .metric-card p {
+            margin: 10px 0 0 0;
+            font-size: 2.5rem;
+            font-weight: 700;
+            color: #2b3674;
+        }
+        .metric-card.food-metric { border-left-color: #00ca9a; }
+        .metric-card.connection-metric { border-left-color: #ffb547; }
+
+        /* CONTENT SECTIONS */
+        .content-grid {
+            display: grid;
+            grid-template-columns: 1fr 2fr;
+            gap: 20px;
+        }
+
+        .card-container {
+            background: #ffffff;
+            border-radius: 16px;
+            padding: 25px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.03);
+        }
+        .card-container h2 {
+            margin-top: 0;
+            margin-bottom: 20px;
+            font-size: 1.2rem;
+            color: #2b3674;
+            border-bottom: 2px solid #f4f7fe;
+            padding-bottom: 10px;
+        }
+
+        /* TABLE */
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.95rem;
+        }
+        table th, table td {
+            text-align: left;
+            padding: 15px;
+            border-bottom: 1px solid #e0e5f2;
+        }
+        table th {
+            color: #a3aed1;
+            font-weight: 600;
+        }
+        table tr:last-child td {
+            border-bottom: none;
+        }
+
+        /* GRAPH */
+        #network-graph {
+            width: 100%;
+            height: 500px;
+            border-radius: 8px;
+            border: 1px solid #e0e5f2;
+            background: #fafbff;
+        }
+    </style>
+</head>
+<body>
+
+    <header>
+        <h1>Food Fiesta Admin Dashboard</h1>
+        <button class="logout-btn" onclick="logout()">Logout</button>
+    </header>
+
+    <div class="dashboard-container">
+        
+        <!-- Metrics -->
+        <div class="metrics-row">
+            <div class="metric-card user-metric">
+                <h3>Total Users</h3>
+                <p id="totalUsers">0</p>
+            </div>
+            <div class="metric-card food-metric">
+                <h3>Total Food Items</h3>
+                <p id="totalFood">0</p>
+            </div>
+            <div class="metric-card connection-metric">
+                <h3>Total Connections</h3>
+                <p id="totalLinks">0</p>
+            </div>
+        </div>
+
+        <!-- Grid -->
+        <div class="content-grid">
+            <!-- Users List -->
+            <div class="card-container">
+                <h2>Registered Users</h2>
+                <table id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Email</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <!-- Populated dynamically -->
+                    </tbody>
+                </table>
+            </div>
+
+            <!-- Network Graph -->
+            <div class="card-container">
+                <h2>User & Food Network</h2>
+                <div id="network-graph"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Security check
+        if (sessionStorage.getItem("adminLoggedIn") !== "true") {
+            window.location.href = "admin-login.html";
+        }
+
+        function logout() {
+            sessionStorage.clear();
+            window.location.href = "admin-login.html";
+        }
+
+        // Fetch Neo4j graph data
+        async function loadDashboard() {
+            try {
+                const response = await fetch('/graph');
+                const data = await response.json();
+                
+                if(data.error) {
+                    alert("Failed to load dashboard: " + data.error);
+                    return;
+                }
+                
+                processMetricsAndTable(data);
+                renderGraph(data);
+                
+            } catch (err) {
+                console.error("Error fetching graph data:", err);
+            }
+        }
+
+        function processMetricsAndTable(data) {
+            let usersCount = 0;
+            let foodsCount = 0;
+            const tbody = document.querySelector("#usersTable tbody");
+            tbody.innerHTML = "";
+
+            data.nodes.forEach(node => {
+                if (node.labels.includes("User")) {
+                    usersCount++;
+                    // Ignore the admin account for user lists
+                    if(node.labels.includes("Admin") || node.properties.email === 'admin@vitap.edu') {
+                        usersCount--;
+                        return;
+                    }
+                    
+                    const tr = document.createElement("tr");
+                    tr.innerHTML = `
+                        <td>${node.properties.name || 'Unknown'}</td>
+                        <td>${node.properties.email}</td>
+                    `;
+                    tbody.appendChild(tr);
+                } else if (node.labels.includes("Food")) {
+                    foodsCount++;
+                }
+            });
+
+            document.getElementById("totalUsers").innerText = usersCount;
+            document.getElementById("totalFood").innerText = foodsCount;
+            document.getElementById("totalLinks").innerText = data.relationships.length;
+        }
+
+        function renderGraph(data) {
+            // Map Neo4j nodes to vis.js nodes
+            const visNodes = new vis.DataSet(
+                data.nodes.map(n => {
+                    const isUser = n.labels.includes("User");
+                    const isAdmin = n.labels.includes("Admin") || n.properties.email === "admin@vitap.edu";
+                    
+                    // Style config
+                    let color = { background: '#4318ff', border: '#2b3674' };
+                    let icon = '🧑';
+                    let label = n.properties.name || n.properties.email;
+                    
+                    if(isAdmin) {
+                        color = { background: '#ff5b5b', border: '#e04848' };
+                        icon = '🛡️';
+                        label = 'Admin (' + label + ')';
+                    } else if (!isUser) { // Food node
+                        color = { background: '#00ca9a', border: '#009a75' };
+                        icon = '🍔';
+                        label = n.properties.name;
+                    }
+
+                    return {
+                        id: n.id,
+                        label: icon + ' ' + label,
+                        color: color,
+                        font: { color: isUser ? '#fff' : '#fff' },
+                        shape: 'box',
+                        margin: 10,
+                        shadow: true,
+                        borderRadius: 8
+                    };
+                })
+            );
+
+            // Map Neo4j relationships to vis.js edges
+            const visEdges = new vis.DataSet(
+                data.relationships.map(r => {
+                    let color = '#a3aed1';
+                    let dashes = false;
+                    let width = 1;
+                    
+                    if(r.type === 'COMMON_LIKE') {
+                        color = '#ffb547';
+                        dashes = true;
+                        width = 3;
+                    }
+
+                    return {
+                        from: r.source,
+                        to: r.target,
+                        label: r.type,
+                        width: width,
+                        color: { color: color },
+                        font: { align: 'middle', size: 12, color: color },
+                        arrows: 'to',
+                        dashes: dashes
+                    };
+                })
+            );
+
+            const container = document.getElementById('network-graph');
+            const graphData = { nodes: visNodes, edges: visEdges };
+            const options = {
+                nodes: {
+                    borderWidth: 2,
+                    font: { face: 'Inter', size: 14 }
+                },
+                edges: {
+                    smooth: { type: 'continuous' }
+                },
+                physics: {
+                    forceAtlas2Based: {
+                        gravitationalConstant: -50,
+                        centralGravity: 0.01,
+                        springLength: 100,
+                        springConstant: 0.08
+                    },
+                    maxVelocity: 50,
+                    solver: 'forceAtlas2Based',
+                    timestep: 0.35,
+                    stabilization: { iterations: 150 }
+                }
+            };
+            
+            new vis.Network(container, graphData, options);
+        }
+
+        // Initialize
+        loadDashboard();
+
+    </script>
+</body>
+</html>

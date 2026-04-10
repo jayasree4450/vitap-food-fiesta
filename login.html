@@ -1,73 +1,207 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 <head>
-<title>Login</title>
-<style>
-body{
-font-family: Arial;
-text-align:center;
-margin-top:100px;
-}
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - Food Fiesta</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        body {
+            margin: 0;
+            font-family: 'Inter', sans-serif;
+            background: linear-gradient(135deg, #f77f00 0%, #d62828 100%);
+            height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #fff;
+        }
 
-input{
-display:block;
-margin:10px auto;
-padding:8px;
-}
+        .container {
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(15px);
+            padding: 40px 30px;
+            border-radius: 16px;
+            box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+            width: 320px;
+            text-align: center;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
 
-button{
-padding:10px 20px;
-background:#c40000;
-color:white;
-border:none;
-cursor:pointer;
-}
-</style>
+        h2 {
+            margin-top: 0;
+            font-weight: 600;
+        }
+
+        /* Toggle switches */
+        .toggle {
+            display: flex;
+            background: rgba(0,0,0,0.2);
+            border-radius: 30px;
+            margin-bottom: 25px;
+            position: relative;
+        }
+        .toggle button {
+            flex: 1;
+            padding: 10px;
+            background: transparent;
+            border: none;
+            color: white;
+            font-weight: 600;
+            cursor: pointer;
+            z-index: 2;
+        }
+        .toggle .active-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 50%;
+            height: 100%;
+            background: #fff;
+            border-radius: 30px;
+            transition: 0.3s ease;
+            z-index: 1;
+        }
+        .toggle button.active {
+            color: #d62828;
+        }
+
+        input {
+            width: 100%;
+            padding: 12px;
+            margin-bottom: 15px;
+            border: none;
+            border-radius: 8px;
+            box-sizing: border-box;
+            background: rgba(255, 255, 255, 0.9);
+            font-size: 1rem;
+            outline: none;
+        }
+        input:focus {
+            box-shadow: 0 0 8px rgba(255,255,255,0.5);
+        }
+
+        .action-btn {
+            width: 100%;
+            padding: 12px;
+            background: #fff;
+            color: #d62828;
+            border: none;
+            border-radius: 8px;
+            font-size: 1.1rem;
+            font-weight: bold;
+            cursor: pointer;
+            transition: transform 0.2s;
+        }
+        .action-btn:hover {
+            transform: scale(1.02);
+            box-shadow: 0 5px 15px rgba(0,0,0,0.1);
+        }
+
+        .name-wrapper {
+            display: none;
+        }
+        
+        .admin-link {
+            display: block;
+            margin-top: 20px;
+            color: #ffd1a8;
+            font-size: 0.9rem;
+            text-decoration: none;
+        }
+        .admin-link:hover {
+            text-decoration: underline;
+        }
+    </style>
 </head>
-
 <body>
 
-<h2>Login / Signup</h2>
+    <div class="container">
+        <h2>Welcome to Food Fiesta</h2>
+        
+        <div class="toggle">
+            <div class="active-bg" id="indicator"></div>
+            <button id="tab-login" class="active" onclick="switchTab('login')">Login</button>
+            <button id="tab-signup" onclick="switchTab('signup')">Sign Up</button>
+        </div>
 
-<input type="text" id="username" placeholder="Enter username">
-<input type="password" id="password" placeholder="Enter password">
+        <div class="name-wrapper" id="nameWrapper">
+            <input type="text" id="name" placeholder="Your Name">
+        </div>
+        <input type="email" id="email" placeholder="Email Address">
+        <input type="password" id="password" placeholder="Password">
 
-<button onclick="signup()">Signup</button>
-<button onclick="login()">Login</button>
+        <button class="action-btn" id="submitBtn" onclick="handleSubmit()">Login</button>
 
-<script>
+        <a href="admin-login.html" class="admin-link">Staff? Admin Login</a>
+    </div>
 
-function signup(){
+    <script>
+        let isLogin = true;
 
-let user=document.getElementById("username").value;
-let pass=document.getElementById("password").value;
+        function switchTab(mode) {
+            isLogin = (mode === 'login');
+            
+            document.getElementById('nameWrapper').style.display = isLogin ? 'none' : 'block';
+            document.getElementById('submitBtn').innerText = isLogin ? 'Login' : 'Sign Up';
+            
+            document.getElementById('tab-login').classList.toggle('active', isLogin);
+            document.getElementById('tab-signup').classList.toggle('active', !isLogin);
+            
+            document.getElementById('indicator').style.left = isLogin ? '0%' : '50%';
+        }
 
-localStorage.setItem("user",user);
-localStorage.setItem("pass",pass);
+        async function handleSubmit() {
+            const email = document.getElementById("email").value;
+            const password = document.getElementById("password").value;
+            
+            if(!email || !password) {
+                alert("Email and password are required!");
+                return;
+            }
 
-alert("Signup successful!");
+            if(isLogin) {
+                try {
+                    const response = await fetch('/login', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ username: email, password: password })
+                    });
+                    const data = await response.json();
+                    
+                    if(response.ok) {
+                        alert("Login successful!");
+                        sessionStorage.setItem("userEmail", email);
+                        window.location.href = "index.html";
+                    } else {
+                        alert(data.error || "Invalid credentials");
+                    }
+                } catch(e) {
+                    alert("Network error.");
+                }
+            } else {
+                const name = document.getElementById("name").value;
+                if(!name) { alert("Name required for signup!"); return; }
 
-}
-
-function login(){
-
-let user=document.getElementById("username").value;
-let pass=document.getElementById("password").value;
-
-let savedUser=localStorage.getItem("user");
-let savedPass=localStorage.getItem("pass");
-
-if(user===savedUser && pass===savedPass){
-alert("Login successful!");
-window.location.href="index.html";
-}
-else{
-alert("Invalid login");
-}
-
-}
-
-</script>
-
+                try {
+                    const response = await fetch('/create-user', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ name, email, password })
+                    });
+                    const data = await response.json();
+                    
+                    if(response.ok) {
+                        alert("Signup successful! You can now login.");
+                        switchTab('login');
+                    } else {
+                        alert(data.error || "Signup failed");
+                    }
+                } catch(e) {
+                    alert("Network error.");
+                }
+            }
+        }
+    </script>
 </body>
 </html>
